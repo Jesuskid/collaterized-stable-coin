@@ -39,7 +39,30 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
  * This is the contract meant to be owned by DSCEngine. It is a ERC20 token that can be minted and burned by the DSCEngine smart contract.
  */
 contract DecentralizedStableCoin is ERC20Burnable, Ownable {
-
+    error MintToZeroAddress();
+    error AmountMustBeGreaterThanZero();
 
     constructor(string memory name_, string memory symbol_) ERC20(name_, symbol_) {}
+
+    function mint(address account, uint256 amount) external onlyOwner returns(bool){
+        if(account == address(0)){
+            revert MintToZeroAddress();
+        }
+        if(amount == 0){
+           revert AmountMustBeGreaterThanZero();
+        }
+        _mint(account, amount);
+        return true;
+    }
+
+    function burn( uint256 amount) public override onlyOwner {
+        uint256 balance = balanceOf(msg.sender);
+        require(balance >= amount, "ERC20: burn amount exceeds balance");
+        super.burn(amount);
+    }
+    function decimals() public view virtual override returns (uint8) {
+        return 18;
+    }
+
+ 
 }
